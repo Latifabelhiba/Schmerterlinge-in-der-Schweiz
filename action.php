@@ -1,41 +1,30 @@
 <?php
-echo "test";
-  $db_host = 'localhost';
-  $db_user = 'root';
-  $db_password = 'root';
-  $db_db = 'schmetterlinge';
-  $db_port = 8889;
+include "includes/connect.php";
 
-  $mysqli = new mysqli(
-    $db_host,
-    $db_user,
-    $db_password,
-    $db_db
-  );
-	
-  if ($mysqli->connect_error) {
-    echo 'Errno: '.$mysqli->connect_errno;
-    echo '<br>';
-    echo 'Error: '.$mysqli->connect_error;
-    exit();
-  }
+// Formulardaten als Variable sichern, prüfen und Injektion verhindern
+$vname = $mysqli->real_escape_string($_POST["vname"]);
+$nname = $mysqli->real_escape_string($_POST["nname"]);
+$email = $mysqli->real_escape_string($_POST["email"]);
+$nameschmetterling = $mysqli->real_escape_string($_POST["nameschmetterling"]);
+$beschrschmetterling = $mysqli->real_escape_string($_POST["beschrschmetterling"]);
+$locationschmetterling = $mysqli->real_escape_string($_POST["locationschmetterling"]);
 
-  echo 'Success: A proper connection to MySQL was made.';
-  echo '<br>';
-  echo 'Host information: '.$mysqli->host_info;
-  echo '<br>';
-  echo 'Protocol version: '.$mysqli->protocol_version;
-  $vname = htmlspecialchars($_POST["vname"]) ;
-  $nname = htmlspecialchars($_POST["nname"]) ;
-  $email = htmlspecialchars($_POST["email"]) ;
-  $nameschmetterling = htmlspecialchars($_POST["nameschmetterling"]) ;
-  $beschrschmetterling = htmlspecialchars($_POST["beschrschmetterling"]) ;
-  $locationschmetterling = htmlspecialchars($_POST["locationschmetterling"]) ;
+if ($vname === "" || $nname === "" || $email === "" || $nameschmetterling === "") {
+	echo "Name und Email dürfen nicht leer sein!";
+	exit();
+}
 
-  $sql = "INSERT INTO `posts` (`Id`, `Vorname`, `Nachname`, `EMail`, `SName`, `SBeschreibung`, `SOrt`) VALUES (NULL, '". $vname."', '".$nname."', '".$email."', '".$nameschmetterling."', '".$beschrschmetterling."', '".$locationschmetterling."')"; 
-  if ($mysqli->query($sql) === TRUE) { echo "New record created successfully";} 
-  else {  echo "Error: " . $sql . "<br>" . $mysqli->error;} 
-  
+// SQL zusammenstellen, um die Werte in die Datenbank einzufügen
+$sql = "INSERT INTO `posts` (`Id`, `Vorname`, `Nachname`, `EMail`, `SName`, `SBeschreibung`, `SOrt`) VALUES (NULL, '" . $vname . "', '" . $nname . "', '" . $email . "', '" . $nameschmetterling . "', '" . $beschrschmetterling . "', '" . $locationschmetterling . "')";
 
-  $mysqli->close();
-?>
+// SQL ausführen und Fehler abfangen
+if ($mysqli->query($sql) !== TRUE) {
+	echo "Error: " . $sql . "<br>" . $mysqli->error;
+	exit();
+}
+
+// Verbindung schliessen
+$mysqli->close();
+
+// Weiterleitung
+header('Location: index.html');
